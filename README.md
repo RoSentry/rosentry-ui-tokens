@@ -3,7 +3,7 @@
 Shared design tokens (color palette and typography) for RoSentry satellite
 frontends. A single canonical palette object (`C`) keeps the zero-dependency
 dark-mode surfaces — such as `rosentry-docs` and `rosentry-support` — visually
-consistent and prevents independent drift.
+consistent and prevents independent drift. 
 
 ## Install
 
