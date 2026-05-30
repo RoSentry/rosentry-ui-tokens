@@ -1,0 +1,12 @@
+{
+  "name": "@rosentry/ui-tokens",
+  "version": "1.0.0",
+  "description": "Shared design tokens (color palette) for RoSentry satellite frontends",
+  "type": "module",
+  "main": "satellite-tokens.js",
+  "exports": { ".": "./satellite-tokens.js" },
+  "files": ["satellite-tokens.js"],
+  "publishConfig": { "access": "public" },
+  "repository": { "type": "git", "url": "git+https://github.com/RoSentry/rosentry-ui-tokens.git" },
+  "license": "UNLICENSED"
+}
