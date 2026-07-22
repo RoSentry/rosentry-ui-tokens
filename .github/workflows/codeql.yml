@@ -1,0 +1,25 @@
+# CodeQL security scanning. Manual/scheduled so it never red-marks a normal push;
+# needs GitHub Advanced Security enabled on the repo (Settings → Code security).
+name: CodeQL
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 4 * * 1"
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ["javascript-typescript"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          language: ${{ matrix.language }}
+      - uses: github/codeql-action/analyze@v3
