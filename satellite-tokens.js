@@ -1,13 +1,20 @@
-// Shared design-token palette for rosentry-docs and rosentry-support.
-// Both apps are zero-dep dark-mode surfaces — one canonical object here
-// prevents independent drift. rosentry-status uses a distinct operational
-// palette (see its App.jsx) and does NOT import this file.
+// Shared design-token palette published as @rosentry/ui-tokens.
 //
-// Import via the @satellite Vite alias defined in each app's vite.config.js:
-//   import { C } from '@satellite/satellite-tokens.js'
+// Consumed by rosentry-docs and rosentry-support, which both import it from the
+// npm package:
+//   import { C as BASE } from '@rosentry/ui-tokens'
 //
-// If a colour needs to diverge between apps, promote that key to a local
-// override in the consuming App.jsx rather than forking this file.
+// rosentry-status is NOT a consumer — it defines its own operational palette
+// inline (see its src/App.jsx).
+//
+// WHAT THIS ACTUALLY PROVIDES TODAY: the canonical token SHAPE (the 24 keys
+// below) plus fallback values. Both current consumers spread this object and
+// then override every one of those keys to the dashboard's neutral-gray theme
+// (rosentry-dashboard/src/lib/theme.js, DARK map), so the values here are not
+// what either site renders. That is the intended pattern — diverge by
+// overriding locally in the consuming App.jsx, never by forking this file —
+// but it does mean adding a key here is the load-bearing change, while
+// changing a colour here affects only consumers that have not overridden it.
 
 export const C = {
   bg:        '#070b12',
