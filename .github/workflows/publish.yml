@@ -1,22 +1,67 @@
+# Publishes to npm with **Trusted Publishing (OIDC)** — no token of any kind.
+#
+# The job proves its identity to npm with a short-lived OIDC token minted by
+# GitHub for this specific workflow in this specific repo. npm checks that
+# against the trusted publisher configured on the package and issues a
+# publish credential scoped to that one publish.
+#
+# This replaced NPM_TOKEN, a long-lived personal access token. Two problems it
+# had beyond being a PAT: it belonged to a person rather than the project, and
+# it had silently expired — @rosentry/schema's publish has been failing since
+# v1.14.0, leaving consumers pinned to a stale v1.13.0 whose schema was missing
+# fields the code depends on. A credential that cannot expire cannot rot that
+# way.
+#
+# ─── ONE-TIME SETUP on npmjs.com (this workflow will not publish until done) ──
+#   Package → Settings → Trusted Publisher → GitHub Actions
+#     Organization or user:  RoSentry
+#     Repository:            <this repo>
+#     Workflow filename:     publish.yml
+#     Environment:           (leave blank)
+#
+# Publishing is pinned to `main` only, so a staging push can never publish —
+# npm's trusted-publisher config does not itself distinguish branches.
 name: Publish to npm
+
 on:
   push: { branches: [staging, main] }
   workflow_dispatch:
+
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Required for OIDC. Without it the runner cannot mint the token and
+      # `npm publish` falls back to looking for a credential that isn't there.
+      id-token: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with: { node-version: 20, registry-url: 'https://registry.npmjs.org' }
+
+      # Node 20 ships npm 10, which predates OIDC publishing. Trusted
+      # Publishing needs 11.5.1+, so upgrade the CLI rather than the runtime —
+      # the package still builds and tests against Node 20.
+      - name: Use an npm that supports OIDC
+        run: |
+          npm install -g npm@latest
+          npm --version
+
       - name: Validate package (staging)
         if: github.ref != 'refs/heads/main'
         run: npm pack --dry-run
+
       - name: Publish if version is new (main only)
         if: github.ref == 'refs/heads/main'
+        # No NODE_AUTH_TOKEN. npm detects the OIDC environment and exchanges
+        # the token itself. --provenance is implied by trusted publishing, so
+        # every release carries a verifiable link back to this commit.
         run: |
           PKG=$(node -p "require('./package.json').name")
           VER=$(node -p "require('./package.json').version")
-          if npm view "$PKG@$VER" version >/dev/null 2>&1; then echo "$PKG@$VER already published — skipping."; else npm publish --access public; fi
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          if npm view "$PKG@$VER" version >/dev/null 2>&1; then
+            echo "$PKG@$VER already published — skipping."
+          else
+            npm publish --access public
+          fi
