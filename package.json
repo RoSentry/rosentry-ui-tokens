@@ -4,6 +4,7 @@
   "description": "Shared design tokens (color palette) for RoSentry satellite frontends",
   "type": "module",
   "main": "satellite-tokens.js",
+  "scripts": { "test": "node scripts/check-tokens.mjs" },
   "exports": { ".": "./satellite-tokens.js" },
   "files": ["satellite-tokens.js"],
   "publishConfig": { "access": "public" },
