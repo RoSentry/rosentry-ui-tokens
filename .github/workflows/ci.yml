@@ -1,0 +1,36 @@
+# Guard the published token shape.
+#
+# This repo had no CI. It publishes @rosentry/ui-tokens, which rosentry-docs and
+# rosentry-support consume by SPREADING — `{ ...BASE, ...overrides }`. That makes
+# a removed or renamed key the dangerous edit: consumers keep compiling, the
+# spread yields undefined for the missing token, and it surfaces as an unstyled
+# element on a site in a different repo, with nothing pointing back here.
+#
+# ubuntu-latest, never the self-hosted runner: a pull_request trigger on a
+# self-hosted runner would execute a fork's code on the production VPS.
+name: CI
+
+on:
+  pull_request:
+    branches: [main, staging]
+  push:
+    branches: [staging]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    name: build-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Check token shape
+        run: npm test
