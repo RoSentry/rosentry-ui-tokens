@@ -66,8 +66,13 @@ the top of the workflow.
 
 ## Repo notes
 
-- No build step, no tests, and no lint config — the package ships
-  `satellite-tokens.js` verbatim (`files` in `package.json` lists only that file).
+- No build step and no lint config — the package ships `satellite-tokens.js`
+  verbatim (`files` in `package.json` lists only that file). There is one test:
+  `npm test` runs `scripts/check-tokens.mjs`, which asserts all 24 keys are
+  present and non-empty, and `.github/workflows/ci.yml` runs it on every pull
+  request and on pushes to `staging`. It exists because consumers spread `C`,
+  so a removed or renamed key compiles fine and shows up as an unstyled element
+  in a different repo.
 - `package.json` declares `"license": "UNLICENSED"` while this repo ships an
   Apache-2.0 `LICENSE` file. Those contradict each other and someone with
   authority over licensing should pick one. (`rosentry-schema` has the same
